@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Expense Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto+Mono&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Roboto Mono', monospace;margin:0;padding:0;background:#f0f2f5;color:#111;}
+.container{max-width:1200px;margin:auto;padding:20px;}
+h2,h3{text-align:center;}
+input, select, button{padding:10px;margin:5px 0;border-radius:5px;border:1px solid #ccc;}
+button{background:#4caf50;color:#fff;border:none;cursor:pointer;}
+button:hover{background:#45a049;}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+table, th, td{border:1px solid #ccc;}
+th, td{padding:5px;text-align:center;}
+.alert{color:red;font-weight:bold;text-align:center;}
+.lang-toggle{float:right;margin-top:-40px;}
+#utkarshDashboard.futuristic{background:#0f111a;color:#f0f0f0;padding:20px;border-radius:15px;box-shadow:0 0 20px rgba(0,255,153,0.5);font-family:'Orbitron', sans-serif;}
+#utkarshDashboard.futuristic input,#utkarshDashboard.futuristic select,#utkarshDashboard.futuristic button{background:rgba(255,255,255,0.05);color:#f0f0f0;border:none;}
+#utkarshDashboard.futuristic button:hover{box-shadow:0 0 15px rgba(0,255,153,0.7);}
+#utkarshDashboard.futuristic table{background:rgba(255,255,255,0.05);border-radius:10px;}
+#utkarshDashboard.futuristic th{color:#00d4ff;}
+.column{float:left;width:33%;padding:10px;}
+.row::after{content:"";clear:both;display:table;}
+</style>
+</head>
+<body>
+<div class="container">
+<h2 id="title">Family Expense Tracker - Login</h2>
+<button class="lang-toggle" onclick="toggleLanguage()">Switch Language</button>
+
+<div id="loginDiv">
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="errorMsg" class="alert"></p>
+</div>
+
+<div id="dashboardDiv" style="display:none;">
+<h3 id="welcomeText">Welcome, <span id="userName"></span></h3>
+<button onclick="logout()">Logout</button>
+
+<!-- Utkarsh Dashboard -->
+<div id="utkarshDashboard" style="display:none;">
+<h3>Set Monthly Budget</h3>
+<input type="number" id="monthlyBudget" placeholder="Enter monthly budget">
+<button onclick="setMonthlyBudget()">Set Budget</button>
+
+<h3>Set Category Budget</h3>
+<input type="text" id="catBudgetName" placeholder="Category Name">
+<input type="number" id="catBudgetAmount" placeholder="Amount">
+<button onclick="setCategoryBudget()">Set Category Budget</button>
+
+<h3>Add Expense</h3>
+<input type="number" id="utkAmount" placeholder="Amount">
+<input type="date" id="utkDate">
+<input type="text" id="utkCategory" placeholder="Category">
+<input type="text" id="utkDesc" placeholder="Description">
+<select id="utkPayment"><option value="Cash">Cash</option><option value="Card">Card</option><option value="UPI">UPI</option></select>
+<button onclick="addUtkarshExpense()">Add Expense</button>
+<button onclick="clearExpenses()">Clear All Expenses</button>
+
+<h3>Expenses Table</h3>
+<table id="utkTable">
+<thead><tr><th>Date</th><th>User</th><th>Category</th><th>Amount</th><th>Payment</th><th>Description</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<h3>Reports</h3>
+<select id="utkReport" onchange="renderTables()">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly" selected>Monthly</option>
+<option value="yearly">Yearly</option>
+</select>
+
+<h3>Category-wise Chart</h3>
+<canvas id="utkChart" width="400" height="200"></canvas>
+</div>
+
+<!-- Mom Dashboard -->
+<div id="momDashboard" style="display:none;">
+<h3>Set Monthly Budget</h3>
+<input type="number" id="momMonthlyBudget" placeholder="Monthly Budget">
+<button onclick="setMomMonthlyBudget()">Set Budget</button>
+
+<div class="row">
+<div class="column">
+<h4>Expenses</h4>
+<input type="number" id="momAmount" placeholder="Amount">
+<input type="date" id="momDate">
+<input type="text" id="momCategory" placeholder="Category">
+<input type="text" id="momDesc" placeholder="Description">
+<select id="momPayment"><option value="Cash">Cash</option><option value="Card">Card</option><option value="UPI">UPI</option></select>
+<button onclick="addMomExpense()">Add Expense</button>
+<button onclick="clearExpenses()">Clear All Expenses</button>
+<table id="momTable"><thead><tr><th>Date</th><th>User</th><th>Category</th><th>Amount</th><th>Payment</th><th>Description</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="column">
+<h4>Savings</h4>
+<input type="number" id="momSavingsAmount" placeholder="Amount">
+<input type="text" id="momSavingsType" placeholder="Type(SIP/LIC)">
+<button onclick="addMomSavings()">Add Savings</button>
+<button onclick="clearMomSavings()">Clear</button>
+<table id="momSavingsTable"><thead><tr><th>Type</th><th>Amount</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="column">
+<h4>Emergency Fund</h4>
+<input type="number" id="momEmergencyAmount" placeholder="Amount">
+<input type="text" id="momEmergencyDesc" placeholder="Description">
+<button onclick="addMomEmergency()">Add Emergency</button>
+<button onclick="clearMomEmergency()">Clear</button>
+<table id="momEmergencyTable"><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody></tbody></table>
+</div>
+</div>
+</div>
+
+<!-- Husband Dashboard -->
+<div id="husbandDashboard" style="display:none;">
+<h3>Set Monthly Budget</h3>
+<input type="number" id="husbandMonthlyBudget" placeholder="Monthly Budget">
+<button onclick="setHusbandMonthlyBudget()">Set Budget</button>
+
+<h4>Add Expense</h4>
+<input type="number" id="husbandAmount" placeholder="Amount">
+<input type="date" id="husbandDate">
+<input type="text" id="husbandCategory" placeholder="Category">
+<input type="text" id="husbandDesc" placeholder="Description">
+<select id="husbandPayment"><option value="Cash">Cash</option><option value="Card">Card</option><option value="UPI">UPI</option></select>
+<button onclick="addHusbandExpense()">Add Expense</button>
+<button onclick="clearExpenses()">Clear All Expenses</button>
+<table id="husbandTable"><thead><tr><th>Date</th><th>User</th><th>Category</th><th>Amount</th><th>Payment</th><th>Description</th></tr></thead><tbody></tbody></table>
+</div>
+
+</div>
+
+<script>
+// --- Shared Data ---
+let language="en";
+let currentUser=null;
+let sharedData=JSON.parse(localStorage.getItem("sharedData")||'{"expenses":[],"momSavings":[],"momEmergency":[],"monthlyBudgets":{},"categoryBudgets":{}}');
+let utkChart=null;
+const users=[{username:"Mom",password:"mom123"},{username:"Utkarsh",password:"utkarsh123"},{username:"Husband",password:"husband123"}];
+
+// --- Language ---
+function toggleLanguage(){language=language==="en"?"mr":"en";}
+
+// --- Login ---
+function login(){
+    const username=document.getElementById("username").value;
+    const password=document.getElementById("password").value;
+    const user=users.find(u=>u.username===username && u.password===password);
+    if(!user){alert("Invalid credentials");return;}
+    currentUser=username;
+    document.getElementById("loginDiv").style.display="none";
+    document.getElementById("dashboardDiv").style.display="block";
+    document.getElementById("userName").innerText=currentUser;
+
+    if(currentUser==="Mom") document.getElementById("momDashboard").style.display="block";
+    else if(currentUser==="Husband") document.getElementById("husbandDashboard").style.display="block";
+    else{ 
+        const utkDash=document.getElementById("utkarshDashboard");
+        utkDash.style.display="block";
+        utkDash.classList.add("futuristic");
+    }
+    renderTables();
+}
+
+// --- Logout ---
+function logout(){
+    currentUser=null;
+    document.getElementById("loginDiv").style.display="block";
+    document.getElementById("dashboardDiv").style.display="none";
+    document.getElementById("momDashboard").style.display="none";
+    document.getElementById("husbandDashboard").style.display="none";
+    document.getElementById("utkarshDashboard").style.display="none";
+}
+
+// --- Shared Expense Functions ---
+function addSharedExpense(amount,date,category,desc,payment){
+    sharedData.expenses.push({user:currentUser,amt:amount,date,cat:category,desc,pay:payment});
+    localStorage.setItem("sharedData",JSON.stringify(sharedData));
+    renderTables(); renderChart();
+}
+
+function clearExpenses(){
+    if(confirm("Clear all family expenses?")){
+        sharedData.expenses=[];
+        localStorage.setItem("sharedData",JSON.stringify(sharedData));
+        renderTables(); renderChart();
+    }
+}
+
+function renderTables(){
+    const tables=[{id:"utkTable"},{id:"momTable"},{id:"husbandTable"}];
+    tables.forEach(t=>{
+        const tbody=document.querySelector(`#${t.id} tbody`);
+        tbody.innerHTML="";
+        sharedData.expenses.forEach(e=>{
+            let tr=document.createElement("tr");
+            tr.innerHTML=`<td>${e.date}</td><td>${e.user}</td><td>${e.cat}</td><td>${e.amt}</td><td>${e.pay}</td><td>${e.desc}</td>`;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+// --- Chart ---
+function renderChart(){
+    const ctx=document.getElementById("utkChart").getContext("2d");
+    const data={};
+    sharedData.expenses.forEach(e=>{data[e.cat]=(data[e.cat]||0)+e.amt;});
+    const labels=Object.keys(data), values=Object.values(data);
+    if(utkChart) utkChart.destroy();
+    utkChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Expenses by Category',data:values,backgroundColor:'rgba(0,255,153,0.5)'}]},options:{responsive:true}});
+}
+
+// --- Add expense buttons ---
+function addUtkarshExpense(){const a=parseFloat(document.getElementById("utkAmount").value);const d=document.getElementById("utkDate").value;const c=document.getElementById("utkCategory").value;const desc=document.getElementById("utkDesc").value;const pay=document.getElementById("utkPayment").value;if(!a||!d||!c){alert("Fill required fields");return;} addSharedExpense(a,d,c,desc,pay);}
+function addMomExpense(){const a=parseFloat(document.getElementById("momAmount").value);const d=document.getElementById("momDate").value;const c=document.getElementById("momCategory").value;const desc=document.getElementById("momDesc").value;const pay=document.getElementById("momPayment").value;if(!a||!d||!c){alert("Fill required fields");return;} addSharedExpense(a,d,c,desc,pay);}
+function addHusbandExpense(){const a=parseFloat(document.getElementById("husbandAmount").value);const d=document.getElementById("husbandDate").value;const c=document.getElementById("husbandCategory").value;const desc=document.getElementById("husbandDesc").value;const pay=document.getElementById("husbandPayment").value;if(!a||!d||!c){alert("Fill required fields");return;} addSharedExpense(a,d,c,desc,pay);}
+</script>
+</body>
+</html>
